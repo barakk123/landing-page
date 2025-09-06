@@ -31,6 +31,7 @@ export async function POST(request) {
     // ולידציה צד שרת
     const errors = {};
     if (!name) errors.name = "שם ריק";
+    else if (name.length < 2) errors.name = "שם חייב להכיל לפחות 2 תווים";
     if (!emailRx.test(email)) errors.email = "אימייל לא תקין";
     if (message.length < 5) errors.message = "הודעה קצרה מדי";
     if (Object.keys(errors).length) {

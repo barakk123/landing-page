@@ -17,6 +17,7 @@ export default function Home() {
   function validateClient(f) {
     const e = {};
     if (!f.name.trim()) e.name = "שם ריק";
+    else if (f.name.trim().length < 2) e.name = "שם חייב להכיל לפחות 2 תווים";
     if (!emailRx.test((f.email ?? "").trim())) e.email = "אימייל לא תקין";
     if ((f.message ?? "").trim().length < 5) e.message = "הודעה קצרה מדי";
     return e;
