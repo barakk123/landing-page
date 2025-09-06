@@ -62,7 +62,7 @@ export default function Home() {
       <div className="w-full max-w-4xl grid gap-8 md:grid-cols-2">
         <section className="self-center">
           <h1 className="text-3xl md:text-4xl font-semibold mb-3">דף נחיתה – יצירת קשר</h1>
-          <p className="text-slate-600">עיצוב נקי, רספונסיבי, וולידציה לקוח+שרת, שליחה מאובטחת ל-Airtable.</p>
+          <p className="text-slate-600">מדגים: עיצוב נקי, רספונסיבי, וולידציה לקוח+שרת, שליחה מאובטחת ל-Airtable.</p>
         </section>
 
         <section className="bg-white rounded-2xl shadow p-6 space-y-4">
@@ -79,7 +79,7 @@ export default function Home() {
             />
 
             <div>
-              <label className="block text-sm mb-1" htmlFor="name">שם מלא</label>
+              <label className="block text-sm mb-1" htmlFor="name">שם</label>
               <input
                 id="name" ref={nameRef}
                 value={form.name}
@@ -88,7 +88,7 @@ export default function Home() {
                  ${errors.name ? "border-red-500" : "border-slate-300"}`}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? "err-name" : undefined}
-                placeholder="שם מלא"
+                placeholder="הזן את שמך"
               />
               {errors.name && <p id="err-name" className="text-red-600 text-sm mt-1">{errors.name}</p>}
             </div>
