@@ -10,7 +10,10 @@ export default function Home() {
   const [status, setStatus] = useState("idle"); // idle|loading|ok|err
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
+  
   const nameRef = useRef(null);
+  const emailRef = useRef(null);
+  const messageRef = useRef(null);
 
   useEffect(() => { nameRef.current?.focus(); }, []);
 
@@ -23,12 +26,22 @@ export default function Home() {
     return e;
   }
 
-  async function onSubmit(e) {
-    e.preventDefault();
+  function focusFirstError(e) {
+    if (e.name) nameRef.current?.focus();
+    else if (e.email) emailRef.current?.focus();
+    else if (e.message) messageRef.current?.focus();
+  }
+
+  async function onSubmit(ev) {
+    ev.preventDefault();
     setServerError("");
+    
     const eClient = validateClient(form);
     setErrors(eClient);
-    if (Object.keys(eClient).length) return;
+    if (Object.keys(eClient).length) {
+      focusFirstError(eClient);
+      return;
+    }
 
     setStatus("loading");
     try {
@@ -40,8 +53,10 @@ export default function Home() {
       const json = await res.json();
 
       if (!res.ok || !json.ok) {
-        // שגיאות ולידציה מהשרת?
-        if (json.errors) setErrors(json.errors);
+        if (json.errors) {
+          setErrors(json.errors);
+          focusFirstError(json.errors);
+        }
         setServerError(json.error || "שגיאה בשליחה");
         setStatus("err");
         return;
@@ -51,6 +66,7 @@ export default function Home() {
       setErrors({});
       setForm({ name: "", email: "", message: "", subscribe: false, topic: "כללי", website: "" });
       setTimeout(() => setStatus("idle"), 2500);
+      setTimeout(() => nameRef.current?.focus(), 10);
     } catch (err) {
       setServerError(err.message);
       setStatus("err");
@@ -61,30 +77,37 @@ export default function Home() {
     <main className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="w-full max-w-4xl grid gap-8 md:grid-cols-2">
         <section className="self-center">
-          <h1 className="text-3xl md:text-4xl font-semibold mb-3">דף נחיתה – יצירת קשר</h1>
+          <h1 className="text-3xl md:text-4xl font-semibold mb-3">דף נחיתה - יצירת קשר</h1>
           <p className="text-slate-600">מדגים: עיצוב נקי, רספונסיבי, וולידציה לקוח+שרת, שליחה מאובטחת ל-Airtable.</p>
         </section>
 
         <section className="bg-white rounded-2xl shadow p-6 space-y-4">
+          {/* אזור חי לנגישות */}
+          <div role="status" aria-live="polite" className="sr-only">
+            {status === "loading" ? "שולח…" : status === "ok" ? "נשלח בהצלחה" : ""}
+          </div>
+
           <form onSubmit={onSubmit} noValidate className="space-y-4">
             {/* honeypot (מוסתר לגמרי מהמשתמשים) */}
             <input
               type="text"
-              tabIndex={-1}
-              autoComplete="off"
               className="hidden"
+              tabIndex={-1}
+              aria-hidden="true"
+              autoComplete="off"
+              name="contact_website_url"
               value={form.website}
               onChange={e => setForm({ ...form, website: e.target.value })}
-              aria-hidden="true"
             />
 
             <div>
               <label className="block text-sm mb-1" htmlFor="name">שם</label>
               <input
                 id="name" ref={nameRef}
+                autoComplete="name"
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
-                className={`w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400
+                className={`w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400 
                  ${errors.name ? "border-red-500" : "border-slate-300"}`}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? "err-name" : undefined}
@@ -97,6 +120,8 @@ export default function Home() {
               <label className="block text-sm mb-1" htmlFor="email">אימייל</label>
               <input
                 id="email" type="email"
+                ref={emailRef}
+                autoComplete="email"
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 className={`w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400
@@ -112,6 +137,8 @@ export default function Home() {
               <label className="block text-sm mb-1" htmlFor="message">הודעה</label>
               <textarea
                 id="message" rows={4}
+                ref={messageRef}
+                autoComplete="off"
                 value={form.message}
                 onChange={e => setForm({ ...form, message: e.target.value })}
                 className={`w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400
@@ -148,14 +175,23 @@ export default function Home() {
             </label>
 
             <button
+              type="submit"
               disabled={status === "loading"}
               className="w-full rounded-lg bg-sky-600 text-white py-2.5 font-medium hover:bg-sky-700 disabled:opacity-60"
             >
               {status === "loading" ? "שולח…" : "שליחה"}
             </button>
 
-            {status === "ok"  && <p className="text-green-600">נשלח בהצלחה ✅</p>}
-            {status === "err" && !!serverError && <p className="text-red-600">{serverError}</p>}
+            {status === "ok"  && (
+              <p className="text-green-700 bg-green-50 border border-green-200 rounded-lg p-2">
+                נשלח בהצלחה ✅
+              </p>
+            )}
+            {status === "err" && !!serverError && (
+              <p className="text-red-700 bg-red-50 border border-red-200 rounded-lg p-2">
+                {serverError}
+              </p>
+            )}
           </form>
         </section>
       </div>
